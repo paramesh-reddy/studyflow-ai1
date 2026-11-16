@@ -8,6 +8,10 @@ export function createApiApp(): express.Express {
   const app = express();
   const cfg = getEnvConfig();
 
+  // Trust Vercel's proxy hop so rate limiting can read the client IP.
+  // A numeric hop count is required; `true` is rejected by express-rate-limit.
+  app.set('trust proxy', 1);
+
   app.use(
     cors({
       origin: cfg.corsOrigin === '*' ? true : cfg.corsOrigin,
