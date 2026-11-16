@@ -5,14 +5,22 @@ import { initDatabase } from '../server/db/database.ts';
 const app = createApiApp();
 let databaseReady: Promise<void> | undefined;
 
-function ensureApiPrefix(url: string | undefined): string {
+function routeUrl(url: string | undefined): string {
   const raw = url && url.length > 0 ? url : '/';
   const queryIndex = raw.indexOf('?');
   const path = queryIndex === -1 ? raw : raw.slice(0, queryIndex);
-  const query = queryIndex === -1 ? '' : raw.slice(queryIndex);
+  const query = queryIndex === -1 ? '' : raw.slice(queryIndex + 1);
+  const params = new URLSearchParams(query);
+  const forwarded = params.get('__sf');
+  if (forwarded && forwarded.startsWith('/')) {
+    params.delete('__sf');
+    const rest = params.toString();
+    const apiPath = forwarded.startsWith('/api/') ? forwarded : `/api${forwarded}`;
+    return rest ? `${apiPath}?${rest}` : apiPath;
+  }
   if (path === '/api' || path.startsWith('/api/')) return raw;
   const normalized = path.startsWith('/') ? path : `/${path}`;
-  return `/api${normalized}${query}`;
+  return query ? `/api${normalized}?${query}` : `/api${normalized}`;
 }
 
 export default async function handler(req: Request, res: Response): Promise<void> {
@@ -26,7 +34,7 @@ export default async function handler(req: Request, res: Response): Promise<void
     return;
   }
 
-  req.url = ensureApiPrefix(req.url);
+  req.url = routeUrl(req.url);
 
   if (!databaseReady) {
     databaseReady = initDatabase()
