@@ -1,0 +1,6 @@
+{
+  "name": "StudyFlow AI",
+  "description": "AI-powered study progress tracker with directed acyclic graph prerequisite rules, study session analytics, mentor oversight, and RAG learning assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
